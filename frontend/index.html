@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD Usuarios</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        form { margin-bottom: 20px; }
+        input { margin: 5px; padding: 8px; }
+        button { padding: 8px 16px; }
+        #usuarios { margin-top: 20px; }
+        .usuario { border: 1px solid #ccc; padding: 10px; margin: 5px 0; }
+    </style>
+</head>
+<body>
+    <h1>CRUD de Usuarios</h1>
+    <form id="userForm">
+        <input type="text" id="nombre" placeholder="Nombre" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="number" id="edad" placeholder="Edad" required>
+        <button type="submit">Crear Usuario</button>
+    </form>
+    <div id="usuarios"></div>
+
+    <script>
+        const API_URL = 'http://localhost:3000/api/usuarios';
+
+        async function loadUsers() {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            if (data.success) {
+                const usuariosDiv = document.getElementById('usuarios');
+                usuariosDiv.innerHTML = data.data.map(user => `
+                    <div class="usuario">
+                        <p>ID: ${user.id}</p>
+                        <p>Nombre: ${user.nombre}</p>
+                        <p>Email: ${user.email}</p>
+                        <p>Edad: ${user.edad}</p>
+                        <button onclick="editUser(${user.id})">Editar</button>
+                        <button onclick="deleteUser(${user.id})">Eliminar</button>
+                    </div>
+                `).join('');
+            }
+        }
+
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nombre = document.getElementById('nombre').value;
+            const email = document.getElementById('email').value;
+            const edad = document.getElementById('edad').value;
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, email, edad })
+            });
+            loadUsers();
+        });
+
+        async function deleteUser(id) {
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            loadUsers();
+        }
+
+        // Función básica para editar (puedes expandir)
+        function editUser(id) {
+            alert('Editar usuario ' + id);
+        }
+
+        loadUsers();
+    </script>
+</body>
+</html>
